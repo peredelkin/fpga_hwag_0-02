@@ -4,15 +4,59 @@
 
 module test();
 
-reg clk;
-reg rst;
-reg cap;
+reg clk,rst,vr,cam,cam_phase;
 
-hwag_core hwag(.clk(clk),.rst(rst),.cap(cap),.cap_edge_sel(1'b1));
+reg [7:0] scnt;
+reg [7:0] scnt_top;
+reg [7:0] tckc;
+reg [7:0] tckc_top;
+reg [7:0] tcnt;
+
+hwag_core hwag(.clk(clk),.rst(rst),.cap(vr),.cap_edge_sel(1'b1));
+
+always @(posedge clk) begin
+    if(scnt == scnt_top) begin
+        scnt <= 8'd0;
+        if(tckc == tckc_top) begin
+            tckc <= 8'd0;
+            vr <= 1'b0;
+            if(tcnt == 57) begin
+                tcnt <= 8'd0;
+                tckc_top <= 8'd63;
+            end else begin
+                
+                if(tcnt == 30) begin
+                    cam_phase <= ~cam_phase;
+                end
+    
+                if(cam_phase) begin
+                    if(tcnt == 54) begin
+                        cam <= 1'b0;
+                    end
+                    if(tcnt == 4) begin
+                        cam <= 1'b1;
+                    end
+                end
+                
+                if(tcnt == 56) begin
+                    tckc_top <= 8'd191;
+                end
+                //scnt_top <= scnt_top + 8'd1;
+                tcnt <= tcnt + 8'd1;
+            end
+        end else begin
+            if(tckc == (tckc_top/2)) begin
+                vr <= 1'b1;
+            end
+            tckc <= tckc + 8'd1;
+        end
+    end else begin
+        scnt <= scnt + 8'd1;
+    end
+end
 
 always #1 clk <= ~clk;
 always #2 rst <= 1'b0;
-always #128 cap <= ~cap;
 
 //integer ssram_i;
 
@@ -26,8 +70,16 @@ initial begin
     
     clk <= 1'b0;
     rst <= 1'b1;
-    cap <= 1'b0;
     
-    #2048 $finish();
+    vr <= 1'b0;
+    scnt <= 8'd0;
+    scnt_top <= 8'd32;
+    tckc <= 8'd0;
+    tckc_top <= 8'd63;
+    tcnt <= 8'd53;
+    cam <= 1'b1;
+    cam_phase <= 1'b0;
+    
+    #800000 $finish();
 end
 endmodule
