@@ -63,21 +63,21 @@ counter #(PCNT_WIDTH) pcnt (	.clk(clk),
 										.carry_out(pcnt_carry_out));
 										
 d_flip_flop #(PCNT_WIDTH) pcnt1 (	.clk(clk),
-												.ena(cap_edge_out),
+												.ena(cap_edge_out & ~tcnt_equal_top),
 												.d(pcnt_out),
 												.srst(1'b0),
 												.arst(rst),
 												.q(pcnt1_out));
 												
 d_flip_flop #(PCNT_WIDTH) pcnt2 (	.clk(clk),
-												.ena(cap_edge_out),
+												.ena(cap_edge_out & ~tcnt_equal_top),
 												.d(pcnt1_out),
 												.srst(1'b0),
 												.arst(rst),
 												.q(pcnt2_out));
 												
 d_flip_flop #(PCNT_WIDTH) pcnt3 (	.clk(clk),
-												.ena(cap_edge_out),
+												.ena(cap_edge_out & ~tcnt_equal_top),
 												.d(pcnt2_out),
 												.srst(1'b0),
 												.arst(rst),

@@ -1,6 +1,7 @@
 `timescale 1us/1us
 
 `include "hwag.sv"
+`include "dac.sv"
 
 module test();
 
@@ -14,6 +15,8 @@ reg [7:0] tcnt;
 
 hwag_core hwag(.clk(clk),.rst(rst),.cap(vr),.cap_edge_sel(1'b1));
 
+dac #(6) dac0 (.clk(clk),.data(tckc),.out(out));
+
 always @(posedge clk) begin
     if(scnt == scnt_top) begin
         scnt <= 8'd0;
@@ -22,6 +25,7 @@ always @(posedge clk) begin
             vr <= 1'b0;
             if(tcnt == 57) begin
                 tcnt <= 8'd0;
+                scnt_top <= scnt_top + 8'd1;
                 tckc_top <= 8'd63;
             end else begin
                 
@@ -41,7 +45,6 @@ always @(posedge clk) begin
                 if(tcnt == 56) begin
                     tckc_top <= 8'd191;
                 end
-                //scnt_top <= scnt_top + 8'd1;
                 tcnt <= tcnt + 8'd1;
             end
         end else begin
@@ -73,13 +76,13 @@ initial begin
     
     vr <= 1'b0;
     scnt <= 8'd0;
-    scnt_top <= 8'd32;
+    scnt_top <= 8'd63;
     tckc <= 8'd0;
     tckc_top <= 8'd63;
     tcnt <= 8'd53;
     cam <= 1'b1;
     cam_phase <= 1'b0;
     
-    #800000 $finish();
+    #100000 $finish();
 end
 endmodule
