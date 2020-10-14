@@ -3,33 +3,6 @@
 `include "hwag.sv"
 `include "dac.sv"
 
-module clk_phase_shift(clk,rst,out1,out2,out3);
-
-input wire clk,rst;
-
-output reg out1,out2,out3;
-
-initial begin
-out1 <= 0;
-out2 <= 0;
-out3 <= 0;
-end
-
-wire [1:0] cnt_out;
-
-counter #(2) cnt (.clk(clk),.ena(1'b1),.sel(1'b0),.sload(1'b0),.d_load(2'd0),.srst(cnt_out[1]),.arst(rst),.q(cnt_out),.carry_out(cnt_carry));
-
-
-always @(posedge clk) begin
-    case (cnt_out)
-    0: begin out1 <= 1'b1; out2 <= 1'b0; out3 <= 1'b0; end
-    1: begin out1 <= 1'b0; out2 <= 1'b1; out3 <= 1'b0; end
-    2: begin out1 <= 1'b0; out2 <= 1'b0; out3 <= 1'b1; end
-    endcase
-end
-
-endmodule
-
 module test();
 
 reg clk,rst,vr,cam,cam_phase;
@@ -42,11 +15,7 @@ reg [7:0] tcnt;
 
 hwag_core hwag(.clk(clk),.rst(rst),.cap(vr),.cap_edge_sel(1'b1));
 
-dac #(6) dac0 (.clk(clk),.ena(ena_out1),.data(tckc),.out(dac_out1));
-dac #(6) dac1 (.clk(clk),.ena(ena_out2),.data(tckc + 8'd21),.out(dac_out2));
-dac #(6) dac2 (.clk(clk),.ena(ena_out3),.data(tckc + 8'd42),.out(dac_out3));
-
-clk_phase_shift clk_shift (.clk(clk),.rst(rst),.out1(ena_out1),.out2(ena_out2),.out3(ena_out3));
+dac #(8) dac0 (.clk(clk),.ena(~rst),.data(tckc),.out(dac_out1));
 
 always @(posedge clk) begin
     if(scnt == scnt_top) begin
@@ -90,7 +59,7 @@ always @(posedge clk) begin
 end
 
 always #1 clk <= ~clk;
-always #1 rst <= 1'b0;
+always #3 rst <= 1'b0;
 
 //integer ssram_i;
 

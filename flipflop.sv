@@ -11,6 +11,8 @@ input wire srst,
 input wire arst,
 output reg [WIDTH-1:0] q );
 
+initial q <= 0;
+
 always @(posedge clk,posedge arst) begin
 				if(arst) begin
 					q <= 0;
