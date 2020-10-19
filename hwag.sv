@@ -25,6 +25,7 @@ wire [PCNT_WIDTH-1:0] pcnt2_out;
 wire [PCNT_WIDTH-1:0] pcnt3_out;
 
 wire gap_found = pcnt1_less_pcnt2 & pcnt3_less_pcnt2;
+wire gap_drn_normal_tooth = pcnt1_less_pcnt & ~tcnt_equal_top;
 
 localparam TCNT_WIDTH = 6;
 localparam [TCNT_WIDTH-1:0] tcnt_load = 2;
@@ -81,19 +82,31 @@ d_flip_flop #(PCNT_WIDTH) pcnt3 (	.clk(clk),
 												.srst(pcnt_ovf), /*сброс при OVF PCNT*/
 												.arst(rst),
 												.q(pcnt3_out));
-//первая пара компараторов (pcnt1 < pcnt2/2)
+//первый компаратор поиска метки (pcnt1 < pcnt2/2)
 comparator #(PCNT_WIDTH-1) pcnt1_comp_pcnt2 (.a(pcnt1_out[PCNT_WIDTH-2:0]),
 															.b(pcnt2_out[PCNT_WIDTH-1:1]),
 															.alb(pcnt1_less_pcnt2));
-//вторая пара компараторов (pcnt3 < pcnt2/2)
+//второй компаратор поиска метки (pcnt3 < pcnt2/2)
 comparator #(PCNT_WIDTH-1) pcnt3_comp_pcnt2 (.a(pcnt3_out[PCNT_WIDTH-2:0]),
 															.b(pcnt2_out[PCNT_WIDTH-1:1]),
 															.alb(pcnt3_less_pcnt2));
+//компаратор проверки метки (pcnt1 < pcnt/2)
+comparator #(PCNT_WIDTH-1) pcnt1_comp_pcnt (.a(pcnt1_out[PCNT_WIDTH-2:0]),
+															.b(pcnt_out[PCNT_WIDTH-1:1]),
+															.alb(pcnt1_less_pcnt));
+//триггер проверки метки
+d_flip_flop #(1) dff_gap_lost (	.clk(clk),
+											.ena(main_edge & tcnt_equal_top & hwag_start),
+											.sload(1'b0),
+											.d(1'b1),
+											.srst(pcnt1_less_pcnt),
+											.arst(rst),
+											.q(gap_lost));
 //триггер запуска генератора углов по условию: (pcnt3 < pcnt2/2 > pcnt1)
 d_flip_flop #(1) dff_hwag_start (.clk(clk),
 											.ena(main_edge & gap_found & ~hwag_start),
 											.d(1'b1),
-											.srst(~pcnt_start),
+											.srst(~pcnt_start | gap_drn_normal_tooth | gap_lost), /*сброс если метка во время нормального зуба или потеряна*/
 											.arst(rst),
 											.q(hwag_start));
 //счетчик зубов дпкв
@@ -102,7 +115,7 @@ counter #(TCNT_WIDTH) tcnt (	.clk(clk),
 										.sel(1'b0),
 										.sload(~hwag_start),
 										.d_load(tcnt_load),
-										.srst((main_edge & tcnt_equal_top) | ~pcnt_start),
+										.srst(~pcnt_start | (main_edge & tcnt_equal_top)),
 										.arst(rst),
 										.q(tcnt_out));
 //компаратор счетчика зубов
