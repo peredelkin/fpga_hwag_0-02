@@ -15,7 +15,6 @@ reg [7:0] tcnt;
 
 hwag_core hwag(.clk(clk),.rst(rst),.cap(vr),.cap_edge_sel(1'b1));
 
-dac #(8) dac0 (.clk(clk),.ena(~rst),.data(tckc),.out(dac_out1));
 
 always @(posedge clk) begin
     if(scnt == scnt_top) begin
@@ -76,13 +75,13 @@ initial begin
     
     vr <= 1'b0;
     scnt <= 8'd0;
-    scnt_top <= 8'd63;
+    scnt_top <= 8'd15;
     tckc <= 8'd0;
     tckc_top <= 8'd63;
     tcnt <= 8'd53;
     cam <= 1'b1;
     cam_phase <= 1'b0;
     
-    #20000 $finish();
+    #1000000 $finish();
 end
 endmodule
