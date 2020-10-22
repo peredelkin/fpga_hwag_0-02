@@ -20,11 +20,11 @@ always @(posedge clk) begin
     if(scnt == scnt_top) begin
         scnt <= 8'd0;
         if(tckc == tckc_top) begin
+        scnt_top <= scnt_top + 8'd1;
             tckc <= 8'd0;
             vr <= 1'b0;
             if(tcnt == 57) begin
                 tcnt <= 8'd0;
-                scnt_top <= scnt_top + 8'd1;
                 tckc_top <= 8'd63;
             end else begin
                 
@@ -82,6 +82,6 @@ initial begin
     cam <= 1'b1;
     cam_phase <= 1'b0;
     
-    #400000 $finish();
+    #1000000 $finish();
 end
 endmodule

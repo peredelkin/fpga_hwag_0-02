@@ -181,7 +181,7 @@ wire [21:0] scnt_out;
 
 counter #(22) scnt 
 (   .clk(clk),
-    .ena(hwag_start),
+    .ena(hwag_start & ~tckc_ovf),
     .sel(1'b1),
     .sload(scnt_ovf | second_edge),
     .d_load(scnt_load),
@@ -189,6 +189,27 @@ counter #(22) scnt
     .arst(rst),
     .q(scnt_out),
     .carry_out(scnt_ovf));
+    
+wire [18:0] tckc_load;
+
+mult2to1 #(19) tckc_sel 
+(   .sel(tcnt_equal_top),
+    .a(19'd64),
+    .b(19'd192),
+    .out(tckc_load));
+
+wire [18:0] tckc_out;
+    
+counter #(19) tckc 
+(   .clk(clk),
+    .ena(hwag_start & ~tckc_ovf & scnt_ovf),
+    .sel(1'b1),
+    .sload(second_edge),
+    .d_load(tckc_load),
+    .srst(1'b0),
+    .arst(rst),
+    .q(tckc_out),
+    .carry_out(tckc_ovf));
 
 //получение угла сдвигом номера зуба
 wire [23:0] acnt_load = tcnt_out << 6;
@@ -198,13 +219,19 @@ wire [23:0] acnt_out;
 //жестко синхронизированный счетчик углов
 counter #(24) acnt 
 (   .clk(clk),
-    .ena(scnt_ovf),
+    .ena(scnt_ovf & hwag_start),
     .sel(1'b0),
     .sload(~hwag_start | (second_edge & hwag_start)),
     .d_load(acnt_load),
-    .srst(~pcnt_start),
+    .srst(~pcnt_start | (scnt_ovf & hwag_start & acnt_equal_top)),
     .arst(rst),
     .q(acnt_out));
+    
+//компаратор счетчика углов
+comparator #(24) acnt_comp_top 
+(   .a(acnt_out),
+    .b(24'd3839),
+    .aeb(acnt_equal_top));
 
 
 endmodule
