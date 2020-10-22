@@ -72,6 +72,15 @@ mult2to1 #(1) cap_edge_switch
     .b(cap_fall),
     .out(main_edge) );
     
+//второй фронт
+d_flip_flop #(1) dff_second_edge 
+(   .clk(clk),
+    .ena(pcnt_start),
+    .d(main_edge),
+    .srst(pcnt_start_srst),
+    .arst(rst),
+    .q(second_edge));
+    
 //запуск счетчика захвата периода
 d_flip_flop #(1) dff_pcnt_start 
 (   .clk(clk),
@@ -162,6 +171,41 @@ comparator #(TCNT_WIDTH) tcnt_comp_top
 (   .a(tcnt_out),
     .b(tcnt_top),
     .aeb(tcnt_equal_top));
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+//получение периода угла
+wire [21:0] scnt_load = pcnt1_out >> 6;
+
+wire [21:0] scnt_out;
+
+counter #(22) scnt 
+(   .clk(clk),
+    .ena(hwag_start),
+    .sel(1'b1),
+    .sload(scnt_ovf | second_edge),
+    .d_load(scnt_load),
+    .srst(1'b0),
+    .arst(rst),
+    .q(scnt_out),
+    .carry_out(scnt_ovf));
+
+//получение угла сдвигом номера зуба
+wire [23:0] acnt_load = tcnt_out << 6;
+
+wire [23:0] acnt_out;
+
+//жестко синхронизированный счетчик углов
+counter #(24) acnt 
+(   .clk(clk),
+    .ena(scnt_ovf),
+    .sel(1'b0),
+    .sload(~hwag_start | (second_edge & hwag_start)),
+    .d_load(acnt_load),
+    .srst(~pcnt_start),
+    .arst(rst),
+    .q(acnt_out));
+
 
 endmodule
 
