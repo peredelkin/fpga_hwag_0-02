@@ -61,7 +61,7 @@ cap_edge input_capture
     
 //выбор фронта
 mult2to1 #(1) cap_edge_switch 
-(	.sel(cap_edge_sel), /*0 = передний фронт, 1 = задний фронт*/
+(   .sel(cap_edge_sel), /*0 = передний фронт, 1 = задний фронт*/
     .a(cap_rise),
     .b(cap_fall),
     .out(main_edge) );
