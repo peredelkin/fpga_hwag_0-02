@@ -35,19 +35,25 @@ wire [PCNT_WIDTH-1:0] pcnt3_out;
 
 /*метка найдена (pcnt1 < pcnt2/2 > pcnt3)*/
 wire gap_found = pcnt1_less_pcnt2 & pcnt3_less_pcnt2;
+/*метка во время нормального зуба*/
+wire gap_drn_normal_tooth = hwag_start & pcnt1_less_pcnt & ~tcnt_equal_top;
 /*разрешение запуска генератора углов*/
 wire hwag_ena = main_edge & gap_found & ~hwag_start;
 
 /*разрядность счетчика зубов шкива коленвала*/
 localparam TCNT_WIDTH = 6;
 /*значение счетчка зубов в момент синхронизации*/
-localparam [TCNT_WIDTH-1:0] tcnt_load = 2;
+localparam [TCNT_WIDTH-1:0] tcnt_load = 3;
 /*выход счетчка зубов шкава коленвала*/
 wire [TCNT_WIDTH-1:0] tcnt_out;
 /*количество зубов шкива коленвала = ((60 - 2) - 1) */
 localparam [TCNT_WIDTH-1:0] tcnt_top = 57;
 /*сброс счетчика зубов при достижении top*/
 wire tcnt_srst = main_edge & tcnt_equal_top;
+
+
+/*сброс триггера запуска счетчка периода захвата  дпкв*/
+wire pcnt_start_srst = pcnt_ovf | gap_drn_normal_tooth;
 
 //детект фронтов
 cap_edge input_capture 
@@ -71,7 +77,7 @@ d_flip_flop #(1) dff_pcnt_start
 (   .clk(clk),
     .ena(main_edge & ~pcnt_start),
     .d(1'b1),
-    .srst(pcnt_ovf),
+    .srst(pcnt_start_srst),
     .arst(rst),
     .q(pcnt_start));
     
