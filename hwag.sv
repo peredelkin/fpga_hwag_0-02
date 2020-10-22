@@ -43,7 +43,7 @@ wire hwag_ena = main_edge & gap_found & ~hwag_start;
 /*разрядность счетчика зубов шкива коленвала*/
 localparam TCNT_WIDTH = 6;
 /*значение счетчка зубов в момент синхронизации*/
-localparam [TCNT_WIDTH-1:0] tcnt_load = 3;
+localparam [TCNT_WIDTH-1:0] tcnt_load = 2;
 /*выход счетчка зубов шкава коленвала*/
 wire [TCNT_WIDTH-1:0] tcnt_out;
 /*количество зубов шкива коленвала = ((60 - 2) - 1) */
