@@ -82,6 +82,6 @@ initial begin
     cam <= 1'b1;
     cam_phase <= 1'b0;
     
-    #1000000 $finish();
+    #400000 $finish();
 end
 endmodule
