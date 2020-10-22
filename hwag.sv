@@ -51,7 +51,7 @@ wire tcnt_srst = main_edge & tcnt_equal_top;
 
 //детект фронтов
 cap_edge input_capture 
-(	.clk(clk),
+(   .clk(clk),
     .ena(1'b1),
     .cap(cap),
     .srst(1'b0),
@@ -88,7 +88,7 @@ counter #(PCNT_WIDTH) pcnt
     
 //первый регистр захвата периода
 d_flip_flop #(PCNT_WIDTH) pcnt1 
-(	.clk(clk),
+(   .clk(clk),
     .ena(pcnt123_ena),
     .d(pcnt_out),
     .srst(~pcnt_start),
@@ -97,7 +97,7 @@ d_flip_flop #(PCNT_WIDTH) pcnt1
     
 //второй регистр захвата периода
 d_flip_flop #(PCNT_WIDTH) pcnt2 
-(	.clk(clk),
+(   .clk(clk),
     .ena(pcnt123_ena),
     .d(pcnt1_out),
     .srst(~pcnt_start),
@@ -106,7 +106,7 @@ d_flip_flop #(PCNT_WIDTH) pcnt2
     
 //третий регистр захвата периода
 d_flip_flop #(PCNT_WIDTH) pcnt3 
-(	.clk(clk),
+(   .clk(clk),
     .ena(pcnt123_ena),
     .d(pcnt2_out),
     .srst(~pcnt_start),
@@ -142,7 +142,7 @@ d_flip_flop #(1) dff_hwag_start
     
 //счетчик зубов дпкв
 counter #(TCNT_WIDTH) tcnt 
-(	.clk(clk),
+(   .clk(clk),
     .ena(main_edge & hwag_start),
     .sel(1'b0),
     .sload(~hwag_start),
@@ -153,7 +153,7 @@ counter #(TCNT_WIDTH) tcnt
     
 //компаратор счетчика зубов
 comparator #(TCNT_WIDTH) tcnt_comp_top 
-(	.a(tcnt_out),
+(   .a(tcnt_out),
     .b(tcnt_top),
     .aeb(tcnt_equal_top));
 
