@@ -20,7 +20,7 @@ always @(posedge clk) begin
     if(scnt == scnt_top) begin
         scnt <= 8'd0;
         if(tckc == tckc_top) begin
-        scnt_top <= scnt_top + 8'd1;
+        scnt_top <= scnt_top - 8'd1;
             tckc <= 8'd0;
             vr <= 1'b0;
             if(tcnt == 57) begin
@@ -75,7 +75,7 @@ initial begin
     
     vr <= 1'b0;
     scnt <= 8'd0;
-    scnt_top <= 8'd15;
+    scnt_top <= 8'd127;
     tckc <= 8'd0;
     tckc_top <= 8'd63;
     tcnt <= 8'd53;

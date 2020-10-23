@@ -9,7 +9,8 @@ module hwag_core(
 input wire clk,
 input wire rst,
 input wire cap,
-input wire cap_edge_sel
+input wire cap_edge_sel,
+output wire acnt_equal_top
 );
 
 /*передний фронт захвата дпкв*/
@@ -177,11 +178,15 @@ comparator #(TCNT_WIDTH) tcnt_comp_top
 //получение периода угла
 wire [21:0] scnt_load = pcnt1_out >> 6;
 
+//выход счетчика периода угла
 wire [21:0] scnt_out;
+
+//счет scnt
+wire scnt_ena = hwag_start & ~tckc_ovf
 
 counter #(22) scnt 
 (   .clk(clk),
-    .ena(hwag_start & ~tckc_ovf),
+    .ena(scnt_ena),
     .sel(1'b1),
     .sload(scnt_ovf | second_edge),
     .d_load(scnt_load),
@@ -192,17 +197,22 @@ counter #(22) scnt
     
 wire [18:0] tckc_load;
 
+//выбор количества углов на зубе
 mult2to1 #(19) tckc_sel 
 (   .sel(tcnt_equal_top),
     .a(19'd64),
     .b(19'd192),
     .out(tckc_load));
 
+//выход счетчика углов на зубе
 wire [18:0] tckc_out;
+
+//счет tckc
+wire tckc_ena = scnt_ena & scnt_ovf;
     
 counter #(19) tckc 
 (   .clk(clk),
-    .ena(hwag_start & ~tckc_ovf & scnt_ovf),
+    .ena(tckc_ena),
     .sel(1'b1),
     .sload(second_edge),
     .d_load(tckc_load),
@@ -214,16 +224,29 @@ counter #(19) tckc
 //получение угла сдвигом номера зуба
 wire [23:0] acnt_load = tcnt_out << 6;
 
+//выход счетчика углов
 wire [23:0] acnt_out;
 
-//жестко синхронизированный счетчик углов
+//сигналы счета от генератора углов
+wire acnt_hwag_count = scnt_ovf & hwag_start;
+//сигналы загрузки от генератора углов
+wire acnt_hwag_load = second_edge & hwag_start;
+
+//счет acnt
+wire acnt_ena = acnt_hwag_count & ~acnt_equal_top;
+//загрузка acnt
+wire acnt_sload = ~hwag_start | acnt_hwag_load;
+//сброс acnt
+wire acnt_srst = (acnt_hwag_count & acnt_equal_top) | ~pcnt_start;
+
+//синхронизированный c tcnt счетчик углов
 counter #(24) acnt 
 (   .clk(clk),
-    .ena(scnt_ovf & hwag_start),
+    .ena(acnt_ena),
     .sel(1'b0),
-    .sload(~hwag_start | (second_edge & hwag_start)),
+    .sload(acnt_sload),
     .d_load(acnt_load),
-    .srst(~pcnt_start | (scnt_ovf & hwag_start & acnt_equal_top)),
+    .srst(acnt_srst),
     .arst(rst),
     .q(acnt_out));
     
