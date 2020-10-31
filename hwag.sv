@@ -53,7 +53,7 @@ wire [PCNT_WIDTH-1:0] pcnt3_out;
 /*метка найдена (pcnt1 < pcnt2/2 > pcnt3)*/
 wire gap_found = pcnt1_less_pcnt2 & pcnt3_less_pcnt2;
 /*метка во время нормального зуба*/
-wire gap_drn_normal_tooth = hwag_start & pcnt1_less_pcnt & ~tcnt_equal_top;
+wire gap_drn_normal_tooth = hwag_start & /*pcnt1_less_pcnt*/gap_found & ~tcnt_equal_top;
 /*разрешение запуска генератора углов*/
 wire hwag_ena = main_edge & gap_found & ~hwag_start;
 
@@ -157,7 +157,7 @@ comparator #(PCNT_WIDTH-1) pcnt3_comp_pcnt2
     .b(pcnt2_out[PCNT_WIDTH-1:1]),
     .alb(pcnt3_less_pcnt2));
     
-//компаратор проверки метки (pcnt1 < pcnt/2) (!) не прикручен
+//компаратор проверки метки (pcnt1 < pcnt/2)
 comparator #(PCNT_WIDTH-1) pcnt1_comp_pcnt 
 (   .a(pcnt1_out[PCNT_WIDTH-2:0]),
     .b(pcnt_out[PCNT_WIDTH-1:1]),
@@ -244,7 +244,7 @@ wire [23:0] acnt_load = tcnt_out << 6;
 output wire [23:0] acnt_out;
 
 //сигналы счета от генератора углов
-wire acnt_hwag_count = scnt_ovf & hwag_start;
+wire acnt_hwag_count = tckc_ena & hwag_start;
 //сигналы загрузки от генератора углов
 wire acnt_hwag_load = second_edge & hwag_start;
 
