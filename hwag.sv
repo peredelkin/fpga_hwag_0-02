@@ -309,14 +309,19 @@ counter #(24) acnt2
     .sel(1'b0),
     .sload(~hwag_start & ~acnt_e_acnt2),
     .d_load(acnt_out),
-    .srst(),
+    .srst(acnt2_e_top & ~acnt_e_acnt2),
     .arst(rst),
     .q(acnt2_out));
     
-comparator #(24) acnt_acnt2_comp 
+comparator #(24) acnt_e_acnt2_comp 
 (   .a(acnt_out),
     .b(acnt2_out),
     .aeb(acnt_e_acnt2));
+    
+comparator #(24) acnt2_e_top_comp 
+(   .a(acnt2_out),
+    .b(24'd3839),
+    .aeb(acnt2_e_top));
 
 endmodule
 
