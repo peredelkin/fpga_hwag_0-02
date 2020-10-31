@@ -182,7 +182,7 @@ wire [21:0] scnt_load = pcnt1_out >> 6;
 wire [21:0] scnt_out;
 
 //счет scnt
-wire scnt_ena = hwag_start & ~tckc_ovf
+wire scnt_ena = hwag_start & ~tckc_ovf;
 
 counter #(22) scnt 
 (   .clk(clk),
