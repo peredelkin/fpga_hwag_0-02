@@ -275,4 +275,33 @@ comparator #(24) acnt_comp_top
 
 endmodule
 
+module hwag
+(
+clk,
+rst,
+cap,
+second_edge,
+hwag_start
+);
+
+input wire clk;
+input wire rst;
+input wire cap;
+output wire second_edge;
+output wire hwag_start;
+
+wire [23:0] acnt_out;
+
+hwag_core hwag_core0
+(   .clk(clk),
+    .rst(rst),
+    .cap(cap),
+    .cap_edge_sel(1'b1),
+    .second_edge(second_edge),
+    .hwag_start(hwag_start),
+    .acnt_out(acnt_out)
+);
+
+endmodule
+
 `endif

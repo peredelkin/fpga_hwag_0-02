@@ -1,45 +1,32 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Thu Oct 22 11:33:52 2020
+[*] Sat Oct 31 15:02:51 2020
 [*]
 [dumpfile] "/home/ruslan/intelFPGA_lite/fpga_hwag_0-02/test.vcd"
-[dumpfile_mtime] "Thu Oct 22 11:29:51 2020"
-[dumpfile_size] 214374986
+[dumpfile_mtime] "Sat Oct 31 15:00:59 2020"
+[dumpfile_size] 207216351
 [savefile] "/home/ruslan/intelFPGA_lite/fpga_hwag_0-02/test.gtkw"
 [timestart] 0
-[size] 3440 1365
+[size] 2101 1361
 [pos] -1 -1
-*-16.063673 144907 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-16.948805 144590 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] test.
+[treeopen] test.hwag0.
 [sst_width] 227
 [signals_width] 239
 [sst_expanded] 1
-[sst_vpaned_height] 426
+[sst_vpaned_height] 424
 @28
 test.clk
 test.vr
-test.hwag.main_edge
-test.hwag.pcnt_start
-@8024
-test.hwag.pcnt_out[23:0]
-@24
-test.hwag.pcnt1_out[23:0]
-test.hwag.pcnt2_out[23:0]
-test.hwag.pcnt3_out[23:0]
-@28
-test.hwag.hwag_start
-@8024
-test.hwag.tcnt_out[5:0]
-@28
-test.hwag.tcnt_equal_top
-test.hwag.gap_drn_normal_tooth
-test.hwag.second_edge
-@8024
-test.hwag.acnt_out[23:0]
+test.hwag0.second_edge
+@29
+test.hwag0.hwag_start
+@8022
+test.hwag0.acnt_out[23:0]
 @20000
 -
 -
-@20001
 -
 [pattern_trace] 1
 [pattern_trace] 0

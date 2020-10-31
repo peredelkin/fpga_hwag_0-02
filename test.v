@@ -13,7 +13,7 @@ reg [7:0] tckc;
 reg [7:0] tckc_top;
 reg [7:0] tcnt;
 
-hwag_core hwag(.clk(clk),.rst(rst),.cap(vr),.cap_edge_sel(1'b1));
+hwag hwag0 (.clk(clk),.rst(rst),.cap(vr),.second_edge(second_edge),.hwag_start(hwag_start));
 
 
 always @(posedge clk) begin
