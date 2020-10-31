@@ -5,20 +5,36 @@
 `include "count.sv"
 `include "comparsion.sv"
 
-module hwag_core(
-input wire clk,
-input wire rst,
-input wire cap,
-input wire cap_edge_sel,
-output wire acnt_equal_top
+module hwag_core
+(
+clk,
+rst,
+cap,
+cap_edge_sel,
+second_edge,
+hwag_start,
+acnt_out
 );
 
+
+/*вход тактирования модуля*/
+input wire clk;
+/*вход асинхронного сброса*/
+input wire rst;
+/*вход сигнала дпкв*/
+input wire cap;
 /*передний фронт захвата дпкв*/
 wire cap_rise;
 /*задний фронт захвата дпкв*/
 wire cap_fall;
-/*выбранный фронт захвата дпкв*/
+/*выбор фронта захвата дпкв*/
+input wire cap_edge_sel;
+/*основной фронт захвата дпкв*/
 wire main_edge;
+/*второй фронт захвата дпкв*/
+output wire second_edge;
+/*выход работы генератора углов*/
+output wire hwag_start;
 
 /*разрядность счетчика захвата дпкв*/
 localparam PCNT_WIDTH = 24;
@@ -225,7 +241,7 @@ counter #(19) tckc
 wire [23:0] acnt_load = tcnt_out << 6;
 
 //выход счетчика углов
-wire [23:0] acnt_out;
+output wire [23:0] acnt_out;
 
 //сигналы счета от генератора углов
 wire acnt_hwag_count = scnt_ovf & hwag_start;
