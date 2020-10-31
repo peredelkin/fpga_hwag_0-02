@@ -76,13 +76,13 @@ initial begin
     
     vr <= 1'b0;
     scnt <= 8'd0;
-    scnt_top <= 8'd15;
+    scnt_top <= 8'd31;
     tckc <= 8'd0;
     tckc_top <= 8'd63;
     tcnt <= 8'd53;
     cam <= 1'b1;
     cam_phase <= 1'b0;
     
-    #500000 $finish();
+    #1000000 $finish();
 end
 endmodule
