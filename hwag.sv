@@ -53,7 +53,7 @@ wire [PCNT_WIDTH-1:0] pcnt3_out;
 /*метка найдена (pcnt1 < pcnt2/2 > pcnt3)*/
 wire gap_found = pcnt1_less_pcnt2 & pcnt3_less_pcnt2;
 /*метка во время нормального зуба*/
-wire gap_drn_normal_tooth = hwag_start & /*pcnt1_less_pcnt*/gap_found & ~tcnt_equal_top;
+wire gap_drn_normal_tooth = hwag_start & pcnt1_less_pcnt & ~tcnt_equal_top;
 /*разрешение запуска генератора углов*/
 wire hwag_ena = main_edge & gap_found & ~hwag_start;
 
