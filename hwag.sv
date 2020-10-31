@@ -291,6 +291,7 @@ output wire second_edge;
 output wire hwag_start;
 
 wire [23:0] acnt_out;
+wire [23:0] acnt2_out;
 
 hwag_core hwag_core0
 (   .clk(clk),
@@ -301,6 +302,21 @@ hwag_core hwag_core0
     .hwag_start(hwag_start),
     .acnt_out(acnt_out)
 );
+
+counter #(24) acnt2 
+(   .clk(clk),
+    .ena(hwag_start & ~acnt_e_acnt2),
+    .sel(1'b0),
+    .sload(~hwag_start & ~acnt_e_acnt2),
+    .d_load(acnt_out),
+    .srst(),
+    .arst(rst),
+    .q(acnt2_out));
+    
+comparator #(24) acnt_acnt2_comp 
+(   .a(acnt_out),
+    .b(acnt2_out),
+    .aeb(acnt_e_acnt2));
 
 endmodule
 
