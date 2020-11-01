@@ -329,7 +329,7 @@ counter #(24) acnt3
     .ena(hwag_start & ~acnt_e_acnt2),
     .sel(1'b0),
     .sload(~hwag_start & ~acnt_e_acnt2),
-    .d_load(24'd128),
+    .d_load(24'd128+24'd3840),
     .srst(acnt3_e_top & ~acnt_e_acnt2),
     .arst(rst),
     .q(acnt3_out));
