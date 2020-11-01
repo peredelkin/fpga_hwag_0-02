@@ -338,6 +338,87 @@ comparator #(24) acnt3_e_top_comp
 (   .a(acnt3_out),
     .b(24'd7679),
     .aeb(acnt3_e_top));
+    
+//компаратор 0 114
+comparator #(24) set0_comp
+(   .a(acnt3_out),
+    .b(24'd1152),
+    .aeb(set0_comp_out));
+
+comparator #(24) reset0_comp
+(   .a(acnt3_out),
+    .b(24'd1216),
+    .aeb(reset0_comp_out));
+    
+d_flip_flop #(1) out0 
+(   .clk(clk),
+    .ena(set0_comp_out),
+    .sload(1'b0),
+    .d(1'b1),
+    .srst(reset0_comp_out),
+    .arst(rst | ~hwag_start),
+    .q(out0_out));
+    
+//компаратор 1 294
+comparator #(24) set1_comp
+(   .a(acnt3_out),
+    .b(24'd3072),
+    .aeb(set1_comp_out));
+
+comparator #(24) reset1_comp
+(   .a(acnt3_out),
+    .b(24'd3136),
+    .aeb(reset1_comp_out));
+    
+d_flip_flop #(1) out1 
+(   .clk(clk),
+    .ena(set1_comp_out),
+    .sload(1'b0),
+    .d(1'b1),
+    .srst(reset1_comp_out),
+    .arst(rst | ~hwag_start),
+    .q(out1_out));
+    
+//компаратор 2 474
+comparator #(24) set2_comp
+(   .a(acnt3_out),
+    .b(24'd4992),
+    .aeb(set2_comp_out));
+
+comparator #(24) reset2_comp
+(   .a(acnt3_out),
+    .b(24'd5056),
+    .aeb(reset2_comp_out));
+    
+d_flip_flop #(1) out2 
+(   .clk(clk),
+    .ena(set2_comp_out),
+    .sload(1'b0),
+    .d(1'b1),
+    .srst(reset2_comp_out),
+    .arst(rst | ~hwag_start),
+    .q(out2_out));
+    
+//компаратор 3 654
+comparator #(24) set3_comp
+(   .a(acnt3_out),
+    .b(24'd6912),
+    .aeb(set3_comp_out));
+
+comparator #(24) reset3_comp
+(   .a(acnt3_out),
+    .b(24'd6976),
+    .aeb(reset3_comp_out));
+    
+d_flip_flop #(1) out3 
+(   .clk(clk),
+    .ena(set3_comp_out),
+    .sload(1'b0),
+    .d(1'b1),
+    .srst(reset3_comp_out),
+    .arst(rst | ~hwag_start),
+    .q(out3_out));
+
 
 endmodule
 
