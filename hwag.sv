@@ -339,7 +339,7 @@ comparator #(24) acnt3_e_top_comp
     .b(24'd7679),
     .aeb(acnt3_e_top));
     
-//компаратор 0 114
+//компаратор 0 114 ign 1
 comparator #(24) set0_comp
 (   .a(acnt3_out),
     .b(24'd1152),
@@ -359,7 +359,9 @@ d_flip_flop #(1) out0
     .arst(rst | ~hwag_start),
     .q(out0_out));
     
-//компаратор 1 294
+wire ign1_out = out0_out | out2_out;
+    
+//компаратор 1 294 ign 3
 comparator #(24) set1_comp
 (   .a(acnt3_out),
     .b(24'd3072),
@@ -379,7 +381,9 @@ d_flip_flop #(1) out1
     .arst(rst | ~hwag_start),
     .q(out1_out));
     
-//компаратор 2 474
+wire ign3_out = out1_out | out3_out;
+    
+//компаратор 2 474 ign 4
 comparator #(24) set2_comp
 (   .a(acnt3_out),
     .b(24'd4992),
@@ -399,7 +403,9 @@ d_flip_flop #(1) out2
     .arst(rst | ~hwag_start),
     .q(out2_out));
     
-//компаратор 3 654
+wire ign4_out = out2_out | out0_out;
+    
+//компаратор 3 654 ign 2
 comparator #(24) set3_comp
 (   .a(acnt3_out),
     .b(24'd6912),
@@ -418,7 +424,8 @@ d_flip_flop #(1) out3
     .srst(reset3_comp_out),
     .arst(rst | ~hwag_start),
     .q(out3_out));
-
+    
+wire ign2_out = out3_out | out1_out;
 
 endmodule
 
