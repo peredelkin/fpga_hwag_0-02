@@ -13,7 +13,7 @@ reg [7:0] tckc;
 reg [7:0] tckc_top;
 reg [7:0] tcnt;
 
-hwag hwag0 (.clk(clk),.rst(rst),.cap(vr),.second_edge(second_edge),.hwag_start(hwag_start));
+hwag hwag0 (.clk(clk),.rst(rst),.cap(vr),.cam(cam),.second_edge(second_edge),.hwag_start(hwag_start));
 
 
 always @(posedge clk) begin
@@ -83,6 +83,6 @@ initial begin
     cam <= 1'b1;
     cam_phase <= 1'b0;
     
-    #2000000 $finish();
+    #1000000 $finish();
 end
 endmodule

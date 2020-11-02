@@ -280,6 +280,7 @@ module hwag
 clk,
 rst,
 cap,
+cam,
 second_edge,
 hwag_start
 );
@@ -287,6 +288,7 @@ hwag_start
 input wire clk;
 input wire rst;
 input wire cap;
+input wire cam;
 output wire second_edge;
 output wire hwag_start;
 
@@ -323,13 +325,21 @@ comparator #(24) acnt2_e_top_comp
 (   .a(acnt2_out),
     .b(24'd3839),
     .aeb(acnt2_e_top));
+
+//acnt3 cam sync
+wire [23:0] acnt3_load_data;
+mult2to1 #(24) acnt3_load_sel 
+(   .sel(cam),
+    .a(24'd128),
+    .b(24'd128+24'd3840),
+    .out(acnt3_load_data));
     
 counter #(24) acnt3 
 (   .clk(clk),
     .ena(hwag_start & ~acnt_e_acnt2),
     .sel(1'b0),
-    .sload(~hwag_start & ~acnt_e_acnt2),
-    .d_load(24'd128+24'd3840),
+    .sload(~hwag_start),
+    .d_load(acnt3_load_data),
     .srst(acnt3_e_top & ~acnt_e_acnt2),
     .arst(rst),
     .q(acnt3_out));
