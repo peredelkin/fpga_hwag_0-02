@@ -296,6 +296,7 @@ wire [23:0] acnt_out;
 wire [23:0] acnt2_out;
 wire [23:0] acnt3_out;
 
+//главное ядро генератора углов
 hwag_core hwag_core0
 (   .clk(clk),
     .rst(rst),
@@ -306,136 +307,113 @@ hwag_core hwag_core0
     .acnt_out(acnt_out)
 );
 
+wire acnt2_ena = hwag_start & ~acnt_e_acnt2;
+wire acnt2_sload = ~hwag_start;
+wire acnt2_srst = acnt2_e_top & ~acnt_e_acnt2;
+
+//второй ведущий счетчик
 counter #(24) acnt2 
 (   .clk(clk),
-    .ena(hwag_start & ~acnt_e_acnt2),
+    .ena(acnt2_ena),
     .sel(1'b0),
-    .sload(~hwag_start & ~acnt_e_acnt2),
+    .sload(acnt2_sload),
     .d_load(acnt_out),
-    .srst(acnt2_e_top & ~acnt_e_acnt2),
+    .srst(acnt2_srst),
     .arst(rst),
     .q(acnt2_out));
-    
+
+//компаратор отставания
 comparator #(24) acnt_e_acnt2_comp 
 (   .a(acnt_out),
     .b(acnt2_out),
     .aeb(acnt_e_acnt2));
-    
+
+//компаратор сброса счета  
 comparator #(24) acnt2_e_top_comp 
 (   .a(acnt2_out),
     .b(24'd3839),
     .aeb(acnt2_e_top));
 
 //acnt3 cam sync
-wire [23:0] acnt3_load_data;
+wire [23:0] acnt3_d_load;
 mult2to1 #(24) acnt3_load_sel 
 (   .sel(cam),
     .a(24'd128),
     .b(24'd128+24'd3840),
-    .out(acnt3_load_data));
+    .out(acnt3_d_load));
     
+wire acnt3_ena = acnt2_ena;
+wire acnt3_sload = acnt2_sload;
+wire acnt3_srst = acnt3_e_top & ~acnt_e_acnt2;
+
+//основной ведомый счетчик
 counter #(24) acnt3 
 (   .clk(clk),
-    .ena(hwag_start & ~acnt_e_acnt2),
+    .ena(acnt3_ena),
     .sel(1'b0),
-    .sload(~hwag_start),
-    .d_load(acnt3_load_data),
-    .srst(acnt3_e_top & ~acnt_e_acnt2),
+    .sload(acnt3_sload),
+    .d_load(acnt3_d_load),
+    .srst(acnt3_srst),
     .arst(rst),
     .q(acnt3_out));
-    
+
+//компаратор сброса счета
 comparator #(24) acnt3_e_top_comp 
 (   .a(acnt3_out),
     .b(24'd7679),
     .aeb(acnt3_e_top));
     
-//компаратор 0 114 ign 1
-comparator #(24) set0_comp
-(   .a(acnt3_out),
-    .b(24'd1152),
-    .aeb(set0_comp_out));
+//=====================
 
-comparator #(24) reset0_comp
-(   .a(acnt3_out),
-    .b(24'd1216),
-    .aeb(reset0_comp_out));
+wire phased = 1'b0;
+
+//компаратор 0 114 ign 1
+set_reset_comparator #(24) set_reset_comp0
+(   .set_data(24'd1152),
+    .reset_data(24'd1216),
+    .data_compare(acnt3_out),
+    .clk(clk),
+    .rst(rst | ~hwag_start),
+    .out(out0_out)
+);
     
-d_flip_flop #(1) out0 
-(   .clk(clk),
-    .ena(set0_comp_out),
-    .sload(1'b0),
-    .d(1'b1),
-    .srst(reset0_comp_out),
-    .arst(rst | ~hwag_start),
-    .q(out0_out));
-    
-wire ign1_out = out0_out | out2_out;
+wire ign1_out = out0_out | (out2_out & phased);
     
 //компаратор 1 294 ign 3
-comparator #(24) set1_comp
-(   .a(acnt3_out),
-    .b(24'd3072),
-    .aeb(set1_comp_out));
-
-comparator #(24) reset1_comp
-(   .a(acnt3_out),
-    .b(24'd3136),
-    .aeb(reset1_comp_out));
+set_reset_comparator #(24) set_reset_comp1
+(   .set_data(24'd3072),
+    .reset_data(24'd3136),
+    .data_compare(acnt3_out),
+    .clk(clk),
+    .rst(rst | ~hwag_start),
+    .out(out1_out)
+);
     
-d_flip_flop #(1) out1 
-(   .clk(clk),
-    .ena(set1_comp_out),
-    .sload(1'b0),
-    .d(1'b1),
-    .srst(reset1_comp_out),
-    .arst(rst | ~hwag_start),
-    .q(out1_out));
-    
-wire ign3_out = out1_out | out3_out;
+wire ign3_out = out1_out | (out3_out & phased);
     
 //компаратор 2 474 ign 4
-comparator #(24) set2_comp
-(   .a(acnt3_out),
-    .b(24'd4992),
-    .aeb(set2_comp_out));
-
-comparator #(24) reset2_comp
-(   .a(acnt3_out),
-    .b(24'd5056),
-    .aeb(reset2_comp_out));
+set_reset_comparator #(24) set_reset_comp2
+(   .set_data(24'd4992),
+    .reset_data(24'd5056),
+    .data_compare(acnt3_out),
+    .clk(clk),
+    .rst(rst | ~hwag_start),
+    .out(out2_out)
+);
     
-d_flip_flop #(1) out2 
-(   .clk(clk),
-    .ena(set2_comp_out),
-    .sload(1'b0),
-    .d(1'b1),
-    .srst(reset2_comp_out),
-    .arst(rst | ~hwag_start),
-    .q(out2_out));
-    
-wire ign4_out = out2_out | out0_out;
+wire ign4_out = out2_out | (out0_out & phased);
     
 //компаратор 3 654 ign 2
-comparator #(24) set3_comp
-(   .a(acnt3_out),
-    .b(24'd6912),
-    .aeb(set3_comp_out));
-
-comparator #(24) reset3_comp
-(   .a(acnt3_out),
-    .b(24'd6976),
-    .aeb(reset3_comp_out));
+set_reset_comparator #(24) set_reset_comp3
+(   .set_data(24'd6912),
+    .reset_data(24'd6976),
+    .data_compare(acnt3_out),
+    .clk(clk),
+    .rst(rst | ~hwag_start),
+    .out(out3_out)
+);
     
-d_flip_flop #(1) out3 
-(   .clk(clk),
-    .ena(set3_comp_out),
-    .sload(1'b0),
-    .d(1'b1),
-    .srst(reset3_comp_out),
-    .arst(rst | ~hwag_start),
-    .q(out3_out));
-    
-wire ign2_out = out3_out | out1_out;
+wire ign2_out = out3_out | (out1_out & phased);
 
 endmodule
 
