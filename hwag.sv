@@ -10,6 +10,7 @@ module hwag_core
 clk,
 rst,
 cap,
+cam,
 cap_edge_sel,
 second_edge,
 hwag_start,
@@ -23,6 +24,8 @@ input wire clk;
 input wire rst;
 /*вход сигнала дпкв*/
 input wire cap;
+/*вход сигнала дпрв*/
+input wire cam;
 /*передний фронт захвата дпкв*/
 wire cap_rise;
 /*задний фронт захвата дпкв*/
@@ -72,7 +75,7 @@ wire tcnt_srst = main_edge & tcnt_equal_top;
 /*сброс триггера запуска счетчка периода захвата  дпкв*/
 wire pcnt_start_srst = pcnt_ovf | gap_drn_normal_tooth;
 
-//детект фронтов
+//детект фронтов дпкв
 cap_edge input_capture 
 (   .clk(clk),
     .ena(1'b1),
@@ -189,8 +192,6 @@ comparator #(TCNT_WIDTH) tcnt_comp_top
     .b(tcnt_top),
     .aeb(tcnt_equal_top));
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 //получение периода угла
 wire [21:0] scnt_load = pcnt1_out >> 6;
 
@@ -272,6 +273,51 @@ comparator #(24) acnt_comp_top
     .b(24'd3839),
     .aeb(acnt_equal_top));
 
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//проверка дпрв (cam)
+
+//захват дпрв
+d_flip_flop #(1) cam_capture
+(   .clk(clk),
+    .ena(main_edge),
+    .sload(1'b0),
+    .d(cam),
+    .srst(1'b0),
+    .arst(rst),
+    .q(cam_out));
+
+//детект фронтов дпрв
+cap_edge cam_edge_capture 
+(   .clk(clk),
+    .ena(1'b1),
+    .cap(cam_out),
+    .srst(1'b0),
+    .arst(rst),
+    .rise(cam_rise),
+    .fall(cam_fall));
+
+//захват позици заднего фронта дпрв
+wire [TCNT_WIDTH-1:0] cam_fall_point;
+d_flip_flop #(TCNT_WIDTH) cap_cam_fall_point 
+(   .clk(clk),
+    .ena(cam_fall),
+    .sload(1'b0),
+    .d(tcnt_out),
+    .srst(~hwag_start),
+    .arst(rst),
+    .q(cam_fall_point));
+
+//захват позиции переднего фронта дпрв
+wire [TCNT_WIDTH-1:0] cam_rise_point;
+d_flip_flop #(TCNT_WIDTH) cap_cam_rise_point
+(   .clk(clk),
+    .ena(cam_rise),
+    .sload(1'b0),
+    .d(tcnt_out),
+    .srst(~hwag_start),
+    .arst(rst),
+    .q(cam_rise_point));
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 endmodule
 
@@ -301,6 +347,7 @@ hwag_core hwag_core0
 (   .clk(clk),
     .rst(rst),
     .cap(cap),
+    .cam(cam),
     .cap_edge_sel(1'b1),
     .second_edge(second_edge),
     .hwag_start(hwag_start),
