@@ -373,7 +373,9 @@ set_reset_comparator #(24) set_reset_comp0
     .reset_data(24'd1216),
     .data_compare(acnt3_out),
     .clk(clk),
-    .rst(rst | ~hwag_start),
+    .ena(~hwag_start),
+    .input_rst(rst),
+    .output_rst(rst | ~hwag_start),
     .out(out0_out)
 );
     
@@ -385,7 +387,9 @@ set_reset_comparator #(24) set_reset_comp1
     .reset_data(24'd3136),
     .data_compare(acnt3_out),
     .clk(clk),
-    .rst(rst | ~hwag_start),
+    .ena(~hwag_start),
+    .input_rst(rst),
+    .output_rst(rst | ~hwag_start),
     .out(out1_out)
 );
     
@@ -397,7 +401,9 @@ set_reset_comparator #(24) set_reset_comp2
     .reset_data(24'd5056),
     .data_compare(acnt3_out),
     .clk(clk),
-    .rst(rst | ~hwag_start),
+    .ena(~hwag_start),
+    .input_rst(rst),
+    .output_rst(rst | ~hwag_start),
     .out(out2_out)
 );
     
@@ -409,7 +415,9 @@ set_reset_comparator #(24) set_reset_comp3
     .reset_data(24'd6976),
     .data_compare(acnt3_out),
     .clk(clk),
-    .rst(rst | ~hwag_start),
+    .ena(~hwag_start),
+    .input_rst(rst),
+    .output_rst(rst | ~hwag_start),
     .out(out3_out)
 );
     
