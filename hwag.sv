@@ -380,44 +380,42 @@ comparator #(24) acnt2_e_top_comp
 (   .a(acnt2_out),
     .b(24'd3839),
     .aeb(acnt2_e_top));
+    
+//=====================
+wire [23:0] acnt3_start;
 
-//acnt3 cam sync
-wire [23:0] acnt3_d_load;
-mult2to1 #(24) acnt3_load_sel 
+mult2to1 #(24) acnt3_start_sel
 (   .sel(cam),
-    .a(24'd128),
-    .b(24'd128+24'd3840),
+    .a(24'd3839 - 24'd2688),
+    .b(24'd7679 - 24'd2688),
+    .out(acnt3_start));
+    
+wire [23:0] acnt3_reload = 24'd7679;
+wire [23:0] acnt3_d_load;
+
+mult2to1 #(24) acnt3_d_load_sel
+(   .sel(hwag_start),
+    .a(acnt3_start),
+    .b(acnt3_reload),
     .out(acnt3_d_load));
     
 wire acnt3_ena = acnt2_ena;
-wire acnt3_sload = acnt2_sload;
-wire acnt3_srst = acnt3_e_top & ~acnt_e_acnt2;
+wire acnt3_sload = tcnt3_ovf | ~hwag_start;
 
-//основной ведомый счетчик
 counter #(24) acnt3 
 (   .clk(clk),
     .ena(acnt3_ena),
-    .sel(1'b0),
+    .sel(1'b1),
     .sload(acnt3_sload),
     .d_load(acnt3_d_load),
-    .srst(acnt3_srst),
+    .srst(1'b0),
     .arst(rst),
-    .q(acnt3_out));
-
-//компаратор сброса счета
-comparator #(24) acnt3_e_top_comp 
-(   .a(acnt3_out),
-    .b(24'd7679),
-    .aeb(acnt3_e_top));
+    .q(acnt3_out),
+    .carry_out(tcnt3_ovf));
     
-//=====================
-
-wire phased = 1'b0;
-
-//компаратор 0 114 ign 1
 set_reset_comparator #(24) set_reset_comp0
-(   .set_data(24'd1152),
-    .reset_data(24'd1216),
+(   .set_data(24'd128),
+    .reset_data(24'd0),
     .data_compare(acnt3_out),
     .clk(clk),
     .ena(~hwag_start),
@@ -425,50 +423,7 @@ set_reset_comparator #(24) set_reset_comp0
     .output_rst(rst | ~hwag_start),
     .out(out0_out)
 );
-    
-wire ign1_out = out0_out | (out2_out & phased);
-    
-//компаратор 1 294 ign 3
-set_reset_comparator #(24) set_reset_comp1
-(   .set_data(24'd3072),
-    .reset_data(24'd3136),
-    .data_compare(acnt3_out),
-    .clk(clk),
-    .ena(~hwag_start),
-    .input_rst(rst),
-    .output_rst(rst | ~hwag_start),
-    .out(out1_out)
-);
-    
-wire ign3_out = out1_out | (out3_out & phased);
-    
-//компаратор 2 474 ign 4
-set_reset_comparator #(24) set_reset_comp2
-(   .set_data(24'd4992),
-    .reset_data(24'd5056),
-    .data_compare(acnt3_out),
-    .clk(clk),
-    .ena(~hwag_start),
-    .input_rst(rst),
-    .output_rst(rst | ~hwag_start),
-    .out(out2_out)
-);
-    
-wire ign4_out = out2_out | (out0_out & phased);
-    
-//компаратор 3 654 ign 2
-set_reset_comparator #(24) set_reset_comp3
-(   .set_data(24'd6912),
-    .reset_data(24'd6976),
-    .data_compare(acnt3_out),
-    .clk(clk),
-    .ena(~hwag_start),
-    .input_rst(rst),
-    .output_rst(rst | ~hwag_start),
-    .out(out3_out)
-);
-    
-wire ign2_out = out3_out | (out1_out & phased);
+
 
 endmodule
 
