@@ -340,7 +340,6 @@ output wire hwag_start;
 
 wire [23:0] acnt_out;
 wire [23:0] acnt2_out;
-wire [23:0] acnt3_out;
 
 //главное ядро генератора углов
 hwag_core hwag_core0
@@ -382,6 +381,7 @@ comparator #(24) acnt2_e_top_comp
     .aeb(acnt2_e_top));
     
 //=====================
+wire [23:0] acnt3_out;
 wire [23:0] acnt3_start;
 
 mult2to1 #(24) acnt3_start_sel
@@ -424,6 +424,145 @@ set_reset_comparator #(24) set_reset_comp0
     .out(out0_out)
 );
 
+wire ign1_out = out0_out;// | out1_out;
+
+//=====================
+wire [23:0] acnt4_out;
+wire [23:0] acnt4_start;
+
+mult2to1 #(24) acnt4_start_sel
+(   .sel(~cam),
+    .a(24'd3839 - 24'd2688),
+    .b(24'd7679 - 24'd2688),
+    .out(acnt4_start));
+    
+wire [23:0] acnt4_reload = 24'd7679;
+wire [23:0] acnt4_d_load;
+
+mult2to1 #(24) acnt4_d_load_sel
+(   .sel(hwag_start),
+    .a(acnt4_start),
+    .b(acnt4_reload),
+    .out(acnt4_d_load));
+    
+wire acnt4_ena = acnt2_ena;
+wire acnt4_sload = tcnt4_ovf | ~hwag_start;
+
+counter #(24) acnt4 
+(   .clk(clk),
+    .ena(acnt4_ena),
+    .sel(1'b1),
+    .sload(acnt4_sload),
+    .d_load(acnt4_d_load),
+    .srst(1'b0),
+    .arst(rst),
+    .q(acnt4_out),
+    .carry_out(tcnt4_ovf));
+    
+set_reset_comparator #(24) set_reset_comp1
+(   .set_data(24'd128),
+    .reset_data(24'd0),
+    .data_compare(acnt4_out),
+    .clk(clk),
+    .ena(~hwag_start),
+    .input_rst(rst),
+    .output_rst(rst | ~hwag_start),
+    .out(out1_out)
+);
+
+wire ign4_out = out1_out;// | out0_out;
+
+//=====================
+wire [23:0] acnt5_out;
+wire [23:0] acnt5_start;
+
+mult2to1 #(24) acnt5_start_sel
+(   .sel(cam),
+    .a(24'd3839 - 24'd768),
+    .b(24'd7679 - 24'd768),
+    .out(acnt5_start));
+    
+wire [23:0] acnt5_reload = 24'd7679;
+wire [23:0] acnt5_d_load;
+
+mult2to1 #(24) acnt5_d_load_sel
+(   .sel(hwag_start),
+    .a(acnt5_start),
+    .b(acnt5_reload),
+    .out(acnt5_d_load));
+    
+wire acnt5_ena = acnt2_ena;
+wire acnt5_sload = tcnt5_ovf | ~hwag_start;
+
+counter #(24) acnt5 
+(   .clk(clk),
+    .ena(acnt5_ena),
+    .sel(1'b1),
+    .sload(acnt5_sload),
+    .d_load(acnt5_d_load),
+    .srst(1'b0),
+    .arst(rst),
+    .q(acnt5_out),
+    .carry_out(tcnt5_ovf));
+    
+set_reset_comparator #(24) set_reset_comp2
+(   .set_data(24'd128),
+    .reset_data(24'd0),
+    .data_compare(acnt5_out),
+    .clk(clk),
+    .ena(~hwag_start),
+    .input_rst(rst),
+    .output_rst(rst | ~hwag_start),
+    .out(out2_out)
+);
+
+wire ign3_out = out2_out;// | out3_out;
+
+//=====================
+wire [23:0] acnt6_out;
+wire [23:0] acnt6_start;
+
+mult2to1 #(24) acnt6_start_sel
+(   .sel(~cam),
+    .a(24'd3839 - 24'd768),
+    .b(24'd7679 - 24'd768),
+    .out(acnt6_start));
+    
+wire [23:0] acnt6_reload = 24'd7679;
+wire [23:0] acnt6_d_load;
+
+mult2to1 #(24) acnt6_d_load_sel
+(   .sel(hwag_start),
+    .a(acnt6_start),
+    .b(acnt6_reload),
+    .out(acnt6_d_load));
+    
+wire acnt6_ena = acnt2_ena;
+wire acnt6_sload = tcnt6_ovf | ~hwag_start;
+
+counter #(24) acnt6 
+(   .clk(clk),
+    .ena(acnt6_ena),
+    .sel(1'b1),
+    .sload(acnt6_sload),
+    .d_load(acnt6_d_load),
+    .srst(1'b0),
+    .arst(rst),
+    .q(acnt6_out),
+    .carry_out(tcnt6_ovf));
+    
+set_reset_comparator #(24) set_reset_comp3
+(   .set_data(24'd128),
+    .reset_data(24'd0),
+    .data_compare(acnt6_out),
+    .clk(clk),
+    .ena(~hwag_start),
+    .input_rst(rst),
+    .output_rst(rst | ~hwag_start),
+    .out(out3_out)
+);
+
+wire ign2_out = out3_out;// | out2_out;
 
 endmodule
 
