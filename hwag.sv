@@ -415,9 +415,9 @@ hwag_core hwag_core0
 
 //=====================
 
-wire acnt2_ena = hwag_start & ~acnt_e_acnt2;
+wire acnt2_ena = hwag_start & ~acnt2_e_top & ~acnt_e_acnt2;
 wire acnt2_sload = ~hwag_start;
-wire acnt2_srst = acnt2_e_top & ~acnt_e_acnt2;
+wire acnt2_srst = hwag_start & acnt2_e_top & ~acnt_e_acnt2;
 
 //второй ведущий счетчик
 counter #(24) acnt2 
@@ -441,13 +441,15 @@ comparator #(24) acnt2_e_top_comp
 (   .a(acnt2_out),
     .b(24'd3839),
     .aeb(acnt2_e_top));
-    
+
 //=====================
-counter_pomparator #(24) cnt_comp_0
+wire count_comp_ena = ~acnt_e_acnt2;
+//=====================
+counter_pomparator #(24) cnt_comp_1
 (   .clk(clk),
     .rst(rst),
     .hwag_start(hwag_start),
-    .acnt_ena(acnt2_ena),
+    .acnt_ena(count_comp_ena),
     .phase(cam),
     .start_phase_0(24'd3839 - 24'd2688),
     .start_phase_1(24'd7679 - 24'd2688),
@@ -455,13 +457,15 @@ counter_pomparator #(24) cnt_comp_0
     .out_set(24'd128),
     .out_reset(24'd0),
     .sr_comp_ena(~hwag_start),
-    .out(ign1_out));
+    .out(ign1));
+
+wire ign1_out = ign1 | ign4;
 //=====================
 counter_pomparator #(24) cnt_comp_4
 (   .clk(clk),
     .rst(rst),
     .hwag_start(hwag_start),
-    .acnt_ena(acnt2_ena),
+    .acnt_ena(count_comp_ena),
     .phase(~cam),
     .start_phase_0(24'd3839 - 24'd2688),
     .start_phase_1(24'd7679 - 24'd2688),
@@ -469,13 +473,15 @@ counter_pomparator #(24) cnt_comp_4
     .out_set(24'd128),
     .out_reset(24'd0),
     .sr_comp_ena(~hwag_start),
-    .out(ign4_out));
+    .out(ign4));
+
+wire ign4_out = ign4 | ign1;
 //=====================
 counter_pomparator #(24) cnt_comp_3
 (   .clk(clk),
     .rst(rst),
     .hwag_start(hwag_start),
-    .acnt_ena(acnt2_ena),
+    .acnt_ena(count_comp_ena),
     .phase(cam),
     .start_phase_0(24'd3839 - 24'd768),
     .start_phase_1(24'd7679 - 24'd768),
@@ -483,13 +489,15 @@ counter_pomparator #(24) cnt_comp_3
     .out_set(24'd128),
     .out_reset(24'd0),
     .sr_comp_ena(~hwag_start),
-    .out(ign3_out));
+    .out(ign3));
+
+wire ign3_out = ign3 | ign2;
 //=====================
 counter_pomparator #(24) cnt_comp_2
 (   .clk(clk),
     .rst(rst),
     .hwag_start(hwag_start),
-    .acnt_ena(acnt2_ena),
+    .acnt_ena(count_comp_ena),
     .phase(~cam),
     .start_phase_0(24'd3839 - 24'd768),
     .start_phase_1(24'd7679 - 24'd768),
@@ -497,8 +505,10 @@ counter_pomparator #(24) cnt_comp_2
     .out_set(24'd128),
     .out_reset(24'd0),
     .sr_comp_ena(~hwag_start),
-    .out(ign2_out));
+    .out(ign2));
 
+wire ign2_out = ign2 | ign3;
+    
 endmodule
 
 `endif
