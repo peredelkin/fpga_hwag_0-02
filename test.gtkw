@@ -1,21 +1,21 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Sat Nov  7 10:50:15 2020
+[*] Sat Nov  7 16:43:07 2020
 [*]
 [dumpfile] "/home/ruslan/intelFPGA_lite/fpga_hwag_0-02/test.vcd"
-[dumpfile_mtime] "Sat Nov  7 10:47:37 2020"
-[dumpfile_size] 458299678
+[dumpfile_mtime] "Sat Nov  7 16:42:18 2020"
+[dumpfile_size] 458148167
 [savefile] "/home/ruslan/intelFPGA_lite/fpga_hwag_0-02/test.gtkw"
 [timestart] 0
 [size] 3432 663
 [pos] -1 -1
-*-17.065155 342733 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-16.979237 1947399 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] test.
 [treeopen] test.hwag0.
-[sst_width] 227
+[sst_width] 350
 [signals_width] 242
 [sst_expanded] 1
-[sst_vpaned_height] 188
+[sst_vpaned_height] 131
 @28
 test.cam
 test.vr
@@ -31,7 +31,6 @@ test.hwag0.acnt2_out[23:0]
 test.hwag0.ign1_out
 test.hwag0.ign3_out
 test.hwag0.ign4_out
-@29
 test.hwag0.ign2_out
 [pattern_trace] 1
 [pattern_trace] 0

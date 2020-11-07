@@ -321,6 +321,66 @@ d_flip_flop #(TCNT_WIDTH) cap_cam_rise_point
 
 endmodule
 
+
+module counter_pomparator #(parameter WIDTH=1)
+(
+input clk,
+input rst,
+input wire hwag_start,
+input wire acnt_ena,
+input wire phase,
+input wire [WIDTH-1:0] start_phase_0,
+input wire [WIDTH-1:0] start_phase_1,
+input wire [WIDTH-1:0] acnt_reload,
+input wire [WIDTH-1:0] out_set,
+input wire [WIDTH-1:0] out_reset,
+input wire sr_comp_ena,
+output wire out
+);
+
+wire [WIDTH-1:0] acnt_start;
+
+mult2to1 #(WIDTH) acnt_start_sel
+(   .sel(phase),
+    .a(start_phase_0),
+    .b(start_phase_1),
+    .out(acnt_start));
+
+wire [23:0] acnt_d_load;
+
+mult2to1 #(WIDTH) acnt_d_load_mult
+(   .sel(hwag_start),
+    .a(acnt_start),
+    .b(acnt_reload),
+    .out(acnt_d_load));
+
+wire [WIDTH-1:0] acnt_out;
+
+counter #(WIDTH) acnt 
+(   .clk(clk),
+    .ena(acnt_ena & ~acnt_ovf & hwag_start),
+    .sel(1'b1),
+    .sload((acnt_ena & acnt_ovf & hwag_start) | ~hwag_start),
+    .d_load(acnt_d_load),
+    .srst(1'b0),
+    .arst(rst),
+    .q(acnt_out),
+    .carry_out(acnt_ovf));
+    
+set_reset_comparator #(WIDTH) set_reset_comp
+(   .set_data(out_set),
+    .reset_data(out_reset),
+    .data_compare(acnt_out),
+    .clk(clk),
+    .ena(sr_comp_ena),
+    .input_rst(rst),
+    .output_rst(rst | ~hwag_start),
+    .out(out)
+);
+
+endmodule
+
+
 module hwag
 (
 clk,
@@ -353,6 +413,8 @@ hwag_core hwag_core0
     .acnt_out(acnt_out)
 );
 
+//=====================
+
 wire acnt2_ena = hwag_start & ~acnt_e_acnt2;
 wire acnt2_sload = ~hwag_start;
 wire acnt2_srst = acnt2_e_top & ~acnt_e_acnt2;
@@ -381,188 +443,61 @@ comparator #(24) acnt2_e_top_comp
     .aeb(acnt2_e_top));
     
 //=====================
-wire [23:0] acnt3_out;
-wire [23:0] acnt3_start;
-
-mult2to1 #(24) acnt3_start_sel
-(   .sel(cam),
-    .a(24'd3839 - 24'd2688),
-    .b(24'd7679 - 24'd2688),
-    .out(acnt3_start));
-    
-wire [23:0] acnt3_reload = 24'd7679;
-wire [23:0] acnt3_d_load;
-
-mult2to1 #(24) acnt3_d_load_sel
-(   .sel(hwag_start),
-    .a(acnt3_start),
-    .b(acnt3_reload),
-    .out(acnt3_d_load));
-    
-wire acnt3_ena = acnt2_ena;
-wire acnt3_sload = tcnt3_ovf | ~hwag_start;
-
-counter #(24) acnt3 
+counter_pomparator #(24) cnt_comp_0
 (   .clk(clk),
-    .ena(acnt3_ena),
-    .sel(1'b1),
-    .sload(acnt3_sload),
-    .d_load(acnt3_d_load),
-    .srst(1'b0),
-    .arst(rst),
-    .q(acnt3_out),
-    .carry_out(tcnt3_ovf));
-    
-set_reset_comparator #(24) set_reset_comp0
-(   .set_data(24'd128),
-    .reset_data(24'd0),
-    .data_compare(acnt3_out),
-    .clk(clk),
-    .ena(~hwag_start),
-    .input_rst(rst),
-    .output_rst(rst | ~hwag_start),
-    .out(out0_out)
-);
-
-wire ign1_out = out0_out;// | out1_out;
-
+    .rst(rst),
+    .hwag_start(hwag_start),
+    .acnt_ena(acnt2_ena),
+    .phase(cam),
+    .start_phase_0(24'd3839 - 24'd2688),
+    .start_phase_1(24'd7679 - 24'd2688),
+    .acnt_reload(24'd7679),
+    .out_set(24'd128),
+    .out_reset(24'd0),
+    .sr_comp_ena(~hwag_start),
+    .out(ign1_out));
 //=====================
-wire [23:0] acnt4_out;
-wire [23:0] acnt4_start;
-
-mult2to1 #(24) acnt4_start_sel
-(   .sel(~cam),
-    .a(24'd3839 - 24'd2688),
-    .b(24'd7679 - 24'd2688),
-    .out(acnt4_start));
-    
-wire [23:0] acnt4_reload = 24'd7679;
-wire [23:0] acnt4_d_load;
-
-mult2to1 #(24) acnt4_d_load_sel
-(   .sel(hwag_start),
-    .a(acnt4_start),
-    .b(acnt4_reload),
-    .out(acnt4_d_load));
-    
-wire acnt4_ena = acnt2_ena;
-wire acnt4_sload = tcnt4_ovf | ~hwag_start;
-
-counter #(24) acnt4 
+counter_pomparator #(24) cnt_comp_4
 (   .clk(clk),
-    .ena(acnt4_ena),
-    .sel(1'b1),
-    .sload(acnt4_sload),
-    .d_load(acnt4_d_load),
-    .srst(1'b0),
-    .arst(rst),
-    .q(acnt4_out),
-    .carry_out(tcnt4_ovf));
-    
-set_reset_comparator #(24) set_reset_comp1
-(   .set_data(24'd128),
-    .reset_data(24'd0),
-    .data_compare(acnt4_out),
-    .clk(clk),
-    .ena(~hwag_start),
-    .input_rst(rst),
-    .output_rst(rst | ~hwag_start),
-    .out(out1_out)
-);
-
-wire ign4_out = out1_out;// | out0_out;
-
+    .rst(rst),
+    .hwag_start(hwag_start),
+    .acnt_ena(acnt2_ena),
+    .phase(~cam),
+    .start_phase_0(24'd3839 - 24'd2688),
+    .start_phase_1(24'd7679 - 24'd2688),
+    .acnt_reload(24'd7679),
+    .out_set(24'd128),
+    .out_reset(24'd0),
+    .sr_comp_ena(~hwag_start),
+    .out(ign4_out));
 //=====================
-wire [23:0] acnt5_out;
-wire [23:0] acnt5_start;
-
-mult2to1 #(24) acnt5_start_sel
-(   .sel(cam),
-    .a(24'd3839 - 24'd768),
-    .b(24'd7679 - 24'd768),
-    .out(acnt5_start));
-    
-wire [23:0] acnt5_reload = 24'd7679;
-wire [23:0] acnt5_d_load;
-
-mult2to1 #(24) acnt5_d_load_sel
-(   .sel(hwag_start),
-    .a(acnt5_start),
-    .b(acnt5_reload),
-    .out(acnt5_d_load));
-    
-wire acnt5_ena = acnt2_ena;
-wire acnt5_sload = tcnt5_ovf | ~hwag_start;
-
-counter #(24) acnt5 
+counter_pomparator #(24) cnt_comp_3
 (   .clk(clk),
-    .ena(acnt5_ena),
-    .sel(1'b1),
-    .sload(acnt5_sload),
-    .d_load(acnt5_d_load),
-    .srst(1'b0),
-    .arst(rst),
-    .q(acnt5_out),
-    .carry_out(tcnt5_ovf));
-    
-set_reset_comparator #(24) set_reset_comp2
-(   .set_data(24'd128),
-    .reset_data(24'd0),
-    .data_compare(acnt5_out),
-    .clk(clk),
-    .ena(~hwag_start),
-    .input_rst(rst),
-    .output_rst(rst | ~hwag_start),
-    .out(out2_out)
-);
-
-wire ign3_out = out2_out;// | out3_out;
-
+    .rst(rst),
+    .hwag_start(hwag_start),
+    .acnt_ena(acnt2_ena),
+    .phase(cam),
+    .start_phase_0(24'd3839 - 24'd768),
+    .start_phase_1(24'd7679 - 24'd768),
+    .acnt_reload(24'd7679),
+    .out_set(24'd128),
+    .out_reset(24'd0),
+    .sr_comp_ena(~hwag_start),
+    .out(ign3_out));
 //=====================
-wire [23:0] acnt6_out;
-wire [23:0] acnt6_start;
-
-mult2to1 #(24) acnt6_start_sel
-(   .sel(~cam),
-    .a(24'd3839 - 24'd768),
-    .b(24'd7679 - 24'd768),
-    .out(acnt6_start));
-    
-wire [23:0] acnt6_reload = 24'd7679;
-wire [23:0] acnt6_d_load;
-
-mult2to1 #(24) acnt6_d_load_sel
-(   .sel(hwag_start),
-    .a(acnt6_start),
-    .b(acnt6_reload),
-    .out(acnt6_d_load));
-    
-wire acnt6_ena = acnt2_ena;
-wire acnt6_sload = tcnt6_ovf | ~hwag_start;
-
-counter #(24) acnt6 
+counter_pomparator #(24) cnt_comp_2
 (   .clk(clk),
-    .ena(acnt6_ena),
-    .sel(1'b1),
-    .sload(acnt6_sload),
-    .d_load(acnt6_d_load),
-    .srst(1'b0),
-    .arst(rst),
-    .q(acnt6_out),
-    .carry_out(tcnt6_ovf));
-    
-set_reset_comparator #(24) set_reset_comp3
-(   .set_data(24'd128),
-    .reset_data(24'd0),
-    .data_compare(acnt6_out),
-    .clk(clk),
-    .ena(~hwag_start),
-    .input_rst(rst),
-    .output_rst(rst | ~hwag_start),
-    .out(out3_out)
-);
-
-wire ign2_out = out3_out;// | out2_out;
+    .rst(rst),
+    .hwag_start(hwag_start),
+    .acnt_ena(acnt2_ena),
+    .phase(~cam),
+    .start_phase_0(24'd3839 - 24'd768),
+    .start_phase_1(24'd7679 - 24'd768),
+    .acnt_reload(24'd7679),
+    .out_set(24'd128),
+    .out_reset(24'd0),
+    .sr_comp_ena(~hwag_start),
+    .out(ign2_out));
 
 endmodule
 

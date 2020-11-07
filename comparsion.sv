@@ -72,10 +72,10 @@ comparator #(WIDTH) reset_comp
     
 d_flip_flop #(1) d_ff_out 
 (   .clk(clk),
-    .ena(set_comp_out),
+    .ena(set_comp_out & ~out),
     .sload(1'b0),
     .d(1'b1),
-    .srst(reset_comp_out),
+    .srst(reset_comp_out & out),
     .arst(output_rst),
     .q(out));
     
