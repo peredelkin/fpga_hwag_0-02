@@ -29,8 +29,8 @@ assign carry_out = (add_carry & ~sel) | (sub_carry & sel);
 localparam [WIDTH-1:0] add_sub_const = 1;
 
 d_flip_flop #(WIDTH) dff0 (.clk(clk),.ena(ena),.sload(sload),.d_load(d_load),.d(add_mult_sub_out),.srst(srst),.arst(arst),.q(q) );
-add #(WIDTH) add0 (.a(q),.b(add_sub_const),.out({add_carry,add_out}) );
-sub #(WIDTH) sub0 (.a(q),.b(add_sub_const),.out({sub_carry,sub_out}) );
+iadd #(WIDTH) add0 (.a(q),.b(add_sub_const),.out({add_carry,add_out}) );
+isub #(WIDTH) sub0 (.a(q),.b(add_sub_const),.out({sub_carry,sub_out}) );
 mult2to1 #(WIDTH) mult1 (.sel(sel),.a(add_out),.b(sub_out),.out(add_mult_sub_out) );
 
 endmodule

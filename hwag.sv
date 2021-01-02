@@ -12,7 +12,6 @@ rst,
 cap,
 cam,
 cap_edge_sel,
-second_edge,
 hwag_start,
 acnt_out
 );
@@ -35,7 +34,7 @@ input wire cap_edge_sel;
 /*основной фронт захвата дпкв*/
 wire main_edge;
 /*второй фронт захвата дпкв*/
-output wire second_edge;
+wire second_edge;
 /*выход работы генератора углов*/
 output wire hwag_start;
 
@@ -275,8 +274,8 @@ comparator #(24) acnt_comp_top
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //проверка дпрв (cam)
-
 //захват дпрв
+/*
 d_flip_flop #(1) cam_capture
 (   .clk(clk),
     .ena(main_edge),
@@ -317,11 +316,12 @@ d_flip_flop #(TCNT_WIDTH) cap_cam_rise_point
     .srst(~hwag_start),
     .arst(rst),
     .q(cam_rise_point));
+	 */
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 endmodule
 
-
+//TODO: переименовать,причесать,вынести в счетчики
 module counter_pomparator #(parameter WIDTH=1)
 (
 input clk,
@@ -387,28 +387,79 @@ clk,
 rst,
 cap,
 cam,
-second_edge,
-hwag_start
+hwag_start,
+ign1_out,
+ign2_out,
+ign3_out,
+ign4_out,
+ign1_ena,
+ign2_ena,
+ign3_ena,
+ign4_ena
 );
 
 input wire clk;
 input wire rst;
 input wire cap;
 input wire cam;
-output wire second_edge;
 output wire hwag_start;
+
+output wire ign1_out;
+assign ign1_out = ign1;// | ign4;
+
+output wire ign1_ena;
+assign ign1_ena = ~hwag_start;
+
+output wire ign4_out;
+assign ign4_out = ign4;// | ign1;
+
+output wire ign4_ena;
+assign ign4_ena = ~hwag_start;
+
+output wire ign3_out;
+assign ign3_out = ign3;// | ign2;
+
+output wire ign3_ena;
+assign ign3_ena = ~hwag_start;
+
+output wire ign2_out;
+assign ign2_out = ign2;// | ign3;
+
+output wire ign2_ena;
+assign ign2_ena = ~hwag_start;
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//фильтры
+
+wire [11:0] cap_filter_out;
+counter #(12) cap_filter
+(	.clk(clk),
+	.ena(~cap_filter_ovf),
+	.sel(cap),
+	.arst(rst),
+	.q(cap_filter_out),
+	.carry_out(cap_filter_ovf));
+	
+d_flip_flop #(1) cap_filter_ff 
+(	.clk(clk),
+	.ena(cap_filter_ovf & cap_ff_ena),
+	.d(cap),
+	.arst(rst),
+	.q(cap_filtered));
+	
+xor(cap_ff_ena,cap_filtered,cap);
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 wire [23:0] acnt_out;
 wire [23:0] acnt2_out;
 
-//главное ядро генератора углов
+//ядро генератора углов
 hwag_core hwag_core0
 (   .clk(clk),
     .rst(rst),
-    .cap(cap),
+    .cap(cap_filtered),
     .cam(cam),
     .cap_edge_sel(1'b1),
-    .second_edge(second_edge),
     .hwag_start(hwag_start),
     .acnt_out(acnt_out)
 );
@@ -454,12 +505,10 @@ counter_pomparator #(24) cnt_comp_1
     .start_phase_0(24'd3839 - 24'd2688),
     .start_phase_1(24'd7679 - 24'd2688),
     .acnt_reload(24'd7679),
-    .out_set(24'd128),
+    .out_set(24'd1920),
     .out_reset(24'd0),
     .sr_comp_ena(~hwag_start),
     .out(ign1));
-
-wire ign1_out = ign1 | ign4;
 //=====================
 counter_pomparator #(24) cnt_comp_4
 (   .clk(clk),
@@ -470,12 +519,10 @@ counter_pomparator #(24) cnt_comp_4
     .start_phase_0(24'd3839 - 24'd2688),
     .start_phase_1(24'd7679 - 24'd2688),
     .acnt_reload(24'd7679),
-    .out_set(24'd128),
+    .out_set(24'd1920),
     .out_reset(24'd0),
     .sr_comp_ena(~hwag_start),
     .out(ign4));
-
-wire ign4_out = ign4 | ign1;
 //=====================
 counter_pomparator #(24) cnt_comp_3
 (   .clk(clk),
@@ -486,12 +533,10 @@ counter_pomparator #(24) cnt_comp_3
     .start_phase_0(24'd3839 - 24'd768),
     .start_phase_1(24'd7679 - 24'd768),
     .acnt_reload(24'd7679),
-    .out_set(24'd128),
+    .out_set(24'd1920),
     .out_reset(24'd0),
     .sr_comp_ena(~hwag_start),
     .out(ign3));
-
-wire ign3_out = ign3 | ign2;
 //=====================
 counter_pomparator #(24) cnt_comp_2
 (   .clk(clk),
@@ -502,13 +547,10 @@ counter_pomparator #(24) cnt_comp_2
     .start_phase_0(24'd3839 - 24'd768),
     .start_phase_1(24'd7679 - 24'd768),
     .acnt_reload(24'd7679),
-    .out_set(24'd128),
+    .out_set(24'd1920),
     .out_reset(24'd0),
     .sr_comp_ena(~hwag_start),
     .out(ign2));
-
-wire ign2_out = ign2 | ign3;
-    
 endmodule
 
 `endif
