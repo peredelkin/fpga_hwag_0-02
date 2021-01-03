@@ -29,6 +29,7 @@ input wire d,
 input wire clk,
 input wire rst,
 input wire ena,
+input wire start,
 input wire [WIDTH-1:0] divider,
 output wire[WIDTH-1:0] remainder,
 output wire q );
@@ -44,6 +45,7 @@ d_flip_flop #(WIDTH-1) d_remainder
 (	.clk(clk),
 	.ena(ena),
 	.d(remainder_d),
+	.srst(~start),
 	.arst(rst),
 	.q(remainder_q));
 	
@@ -99,8 +101,9 @@ d_flip_flop #(WIDTH) d_dividend
 integer_shift_sub #(WIDTH) shift_sub
 (	.d(dividend_q[WIDTH-1]),
 	.clk(clk),
-	.rst(rst || ~start),
+	.rst(rst),
 	.ena(~rdy),
+	.start(start),
 	.divider(divider),
 	.remainder(remainder),
 	.q(result_d));

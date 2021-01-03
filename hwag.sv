@@ -325,8 +325,8 @@ integer_div #(32) test_div
 (	.clk(clk),
 	.rst(rst),
 	.start(~main_edge),
-	.dividend(32'd128),
-	.divider(32'd3),
+	.dividend(32'd39483),
+	.divider(32'd321),
 	.remainder(test_div_remainder),
 	.result(test_div_result),
 	.rdy(test_div_rdy));
