@@ -455,8 +455,8 @@ integer_div #(24) test_div
 (	.clk(clk),
 	.rst(rst),
 	.start(~main_edge),
-	.dividend(24'd50000),
-	.divider({2'd0,scnt_load}),
+	.dividend(24'd100000),
+	.divider(scnt_load),
 	.remainder(test_div_remainder),
 	.result(test_div_result),
 	.rdy(test_div_rdy));
