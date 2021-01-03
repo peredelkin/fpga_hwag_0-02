@@ -318,6 +318,18 @@ d_flip_flop #(TCNT_WIDTH) cap_cam_rise_point
     .q(cam_rise_point));
 	 */
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+wire [31:0] test_div_remainder;
+wire [31:0] test_div_result;
+wire test_div_rdy;
+integer_div #(32) test_div
+(	.clk(clk),
+	.rst(rst),
+	.start(~main_edge),
+	.dividend(32'd128),
+	.divider(32'd3),
+	.remainder(test_div_remainder),
+	.result(test_div_result),
+	.rdy(test_div_rdy));
 
 endmodule
 
@@ -431,8 +443,8 @@ assign ign2_ena = ~hwag_start;
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //фильтры
 
-wire [11:0] cap_filter_out;
-counter #(12) cap_filter
+wire [7:0] cap_filter_out;
+counter #(8) cap_filter
 (	.clk(clk),
 	.ena(~cap_filter_ovf),
 	.sel(cap),

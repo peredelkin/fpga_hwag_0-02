@@ -1,31 +1,27 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Thu Dec 31 09:11:47 2020
+[*] Sun Jan  3 12:08:16 2021
 [*]
 [dumpfile] "/home/ruslan/intelFPGA_lite/fpga_hwag_0-02/test.vcd"
-[dumpfile_mtime] "Thu Dec 31 09:09:24 2020"
-[dumpfile_size] 35709956
+[dumpfile_mtime] "Sun Jan  3 12:06:23 2021"
+[dumpfile_size] 36074358
 [savefile] "/home/ruslan/intelFPGA_lite/fpga_hwag_0-02/test.gtkw"
-[timestart] 0
-[size] 3440 663
-[pos] 438 216
-*-10.095140 266003 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[timestart] 4562
+[size] 1716 1367
+[pos] -1 -1
+*-5.095140 266003 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] test.
 [treeopen] test.hwag0.
+[treeopen] test.hwag0.hwag_core0.
 [sst_width] 279
 [signals_width] 242
 [sst_expanded] 1
-[sst_vpaned_height] 234
+[sst_vpaned_height] 579
 @28
 test.cam
 test.vr
-@8024
-test.hwag0.cap_filter_out[7:0]
-@28
 test.hwag0.cap_ff_ena
-@29
 test.hwag0.cap_filtered
-@28
 test.hwag0.hwag_start
 @24
 test.hwag0.hwag_core0.tcnt_out[5:0]
@@ -39,5 +35,16 @@ test.hwag0.ign1_out
 test.hwag0.ign3_out
 test.hwag0.ign4_out
 test.hwag0.ign2_out
+@24
+test.hwag0.hwag_core0.test_div.dividend[31:0]
+test.hwag0.hwag_core0.test_div.divider[31:0]
+@28
+test.hwag0.clk
+test.hwag0.hwag_core0.test_div.start
+@24
+test.hwag0.hwag_core0.test_div.rdy
+test.hwag0.hwag_core0.test_div.result[31:0]
+@25
+test.hwag0.hwag_core0.test_div.remainder[31:0]
 [pattern_trace] 1
 [pattern_trace] 0
