@@ -10,10 +10,11 @@ module hwag_core
 clk,
 rst,
 cap,
-cam,
 cap_edge_sel,
+main_edge,
 hwag_start,
-acnt_out
+acnt_out,
+scnt_load
 );
 
 
@@ -23,8 +24,6 @@ input wire clk;
 input wire rst;
 /*вход сигнала дпкв*/
 input wire cap;
-/*вход сигнала дпрв*/
-input wire cam;
 /*передний фронт захвата дпкв*/
 wire cap_rise;
 /*задний фронт захвата дпкв*/
@@ -32,7 +31,7 @@ wire cap_fall;
 /*выбор фронта захвата дпкв*/
 input wire cap_edge_sel;
 /*основной фронт захвата дпкв*/
-wire main_edge;
+output wire main_edge;
 /*второй фронт захвата дпкв*/
 wire second_edge;
 /*выход работы генератора углов*/
@@ -192,8 +191,8 @@ comparator #(TCNT_WIDTH) tcnt_comp_top
     .aeb(tcnt_equal_top));
 
 //получение периода угла
-wire [21:0] scnt_load = pcnt1_out >> 6;
-
+output wire [21:0] scnt_load;
+assign scnt_load = pcnt1_out >> 6;
 //выход счетчика периода угла
 wire [21:0] scnt_out;
 
@@ -271,65 +270,6 @@ comparator #(24) acnt_comp_top
 (   .a(acnt_out),
     .b(24'd3839),
     .aeb(acnt_equal_top));
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//проверка дпрв (cam)
-//захват дпрв
-/*
-d_flip_flop #(1) cam_capture
-(   .clk(clk),
-    .ena(main_edge),
-    .sload(1'b0),
-    .d(cam),
-    .srst(1'b0),
-    .arst(rst),
-    .q(cam_out));
-
-//детект фронтов дпрв
-cap_edge cam_edge_capture 
-(   .clk(clk),
-    .ena(1'b1),
-    .cap(cam_out),
-    .srst(1'b0),
-    .arst(rst),
-    .rise(cam_rise),
-    .fall(cam_fall));
-
-//захват позици заднего фронта дпрв
-wire [TCNT_WIDTH-1:0] cam_fall_point;
-d_flip_flop #(TCNT_WIDTH) cap_cam_fall_point 
-(   .clk(clk),
-    .ena(cam_fall),
-    .sload(1'b0),
-    .d(tcnt_out),
-    .srst(~hwag_start),
-    .arst(rst),
-    .q(cam_fall_point));
-
-//захват позиции переднего фронта дпрв
-wire [TCNT_WIDTH-1:0] cam_rise_point;
-d_flip_flop #(TCNT_WIDTH) cap_cam_rise_point
-(   .clk(clk),
-    .ena(cam_rise),
-    .sload(1'b0),
-    .d(tcnt_out),
-    .srst(~hwag_start),
-    .arst(rst),
-    .q(cam_rise_point));
-	 */
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-wire [31:0] test_div_remainder;
-wire [31:0] test_div_result;
-wire test_div_rdy;
-integer_div #(32) test_div
-(	.clk(clk),
-	.rst(rst),
-	.start(~main_edge),
-	.dividend(32'd39483),
-	.divider(32'd321),
-	.remainder(test_div_remainder),
-	.result(test_div_result),
-	.rdy(test_div_rdy));
 
 endmodule
 
@@ -463,21 +403,21 @@ xor(cap_ff_ena,cap_filtered,cap);
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 wire [23:0] acnt_out;
-wire [23:0] acnt2_out;
-
+wire [21:0] scnt_load;
 //ядро генератора углов
 hwag_core hwag_core0
 (   .clk(clk),
     .rst(rst),
     .cap(cap_filtered),
-    .cam(cam),
     .cap_edge_sel(1'b1),
+	 .main_edge(main_edge),
     .hwag_start(hwag_start),
-    .acnt_out(acnt_out)
+    .acnt_out(acnt_out),
+	 .scnt_load(scnt_load)
 );
 
 //=====================
-
+wire [23:0] acnt2_out;
 wire acnt2_ena = hwag_start & ~acnt2_e_top & ~acnt_e_acnt2;
 wire acnt2_sload = ~hwag_start;
 wire acnt2_srst = hwag_start & acnt2_e_top & ~acnt_e_acnt2;
@@ -505,6 +445,31 @@ comparator #(24) acnt2_e_top_comp
     .b(24'd3839),
     .aeb(acnt2_e_top));
 
+
+//~~~~~~~~~~~~~~~~~~~~~
+//тестовый расчет времени накопления
+wire [23:0] test_div_remainder;
+wire [23:0] test_div_result;
+wire test_div_rdy;
+integer_div #(24) test_div
+(	.clk(clk),
+	.rst(rst),
+	.start(~main_edge),
+	.dividend(24'd50000),
+	.divider({2'd0,scnt_load}),
+	.remainder(test_div_remainder),
+	.result(test_div_result),
+	.rdy(test_div_rdy));
+
+wire [23:0] angle_set_out;	
+d_flip_flop #(24) angle_set 
+(	.clk(clk),
+	.ena(main_edge & test_div_rdy),
+	.d(test_div_result),
+	.arst(rst),
+	.q(angle_set_out));
+//~~~~~~~~~~~~~~~~~~~~~
+
 //=====================
 wire count_comp_ena = ~acnt_e_acnt2;
 //=====================
@@ -517,9 +482,9 @@ counter_pomparator #(24) cnt_comp_1
     .start_phase_0(24'd3839 - 24'd2688),
     .start_phase_1(24'd7679 - 24'd2688),
     .acnt_reload(24'd7679),
-    .out_set(24'd1920),
+    .out_set(angle_set_out),
     .out_reset(24'd0),
-    .sr_comp_ena(~hwag_start),
+    .sr_comp_ena(main_edge),
     .out(ign1));
 //=====================
 counter_pomparator #(24) cnt_comp_4
@@ -531,9 +496,9 @@ counter_pomparator #(24) cnt_comp_4
     .start_phase_0(24'd3839 - 24'd2688),
     .start_phase_1(24'd7679 - 24'd2688),
     .acnt_reload(24'd7679),
-    .out_set(24'd1920),
+    .out_set(angle_set_out),
     .out_reset(24'd0),
-    .sr_comp_ena(~hwag_start),
+    .sr_comp_ena(main_edge),
     .out(ign4));
 //=====================
 counter_pomparator #(24) cnt_comp_3
@@ -545,9 +510,9 @@ counter_pomparator #(24) cnt_comp_3
     .start_phase_0(24'd3839 - 24'd768),
     .start_phase_1(24'd7679 - 24'd768),
     .acnt_reload(24'd7679),
-    .out_set(24'd1920),
+    .out_set(angle_set_out),
     .out_reset(24'd0),
-    .sr_comp_ena(~hwag_start),
+    .sr_comp_ena(main_edge),
     .out(ign3));
 //=====================
 counter_pomparator #(24) cnt_comp_2
@@ -559,9 +524,9 @@ counter_pomparator #(24) cnt_comp_2
     .start_phase_0(24'd3839 - 24'd768),
     .start_phase_1(24'd7679 - 24'd768),
     .acnt_reload(24'd7679),
-    .out_set(24'd1920),
+    .out_set(angle_set_out),
     .out_reset(24'd0),
-    .sr_comp_ena(~hwag_start),
+    .sr_comp_ena(main_edge),
     .out(ign2));
 endmodule
 
